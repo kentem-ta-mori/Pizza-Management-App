@@ -34,8 +34,7 @@ public class PizzaController : ControllerBase
         try
         {
             OrderedMenue orderedMenue = PizzaService.ConvertToDomainModel(orderRequestDto, null);
-            Action<OrderedMenue> persistAction =
-                OrderedMenueRequestDto.OrderStatus.recommended == orderRequestDto.orderStatus ? PizzaService.Add : PizzaService.AddRecommended;
+            Action<OrderedMenue> persistAction = PizzaService.Add;
             OrderProcessingResult result = PizzaService.HandleOrder(orderedMenue, orderRequestDto.orderStatus, persistAction);
 
             if (!string.IsNullOrEmpty(result.ErrorMessage))
@@ -83,8 +82,7 @@ public class PizzaController : ControllerBase
             }
 
             OrderedMenue orderedMenueToUpdate = PizzaService.ConvertToDomainModel(orderRequestDto, id);
-            Action<OrderedMenue> persistAction =
-                 OrderedMenueRequestDto.OrderStatus.recommended == orderRequestDto.orderStatus ? PizzaService.UpdateRecommended : PizzaService.Update;
+            Action<OrderedMenue> persistAction = PizzaService.Update;
 
             OrderProcessingResult result = PizzaService.HandleOrder(orderedMenueToUpdate, orderRequestDto.orderStatus, persistAction);
 

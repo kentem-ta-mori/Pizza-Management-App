@@ -139,14 +139,6 @@ public static class PizzaService
         OrderedMenues.Add(order);
     }
 
-    public static void AddRecommended(OrderedMenue order)
-    {
-        Pizza recommended = PizzaSuggester.GetCheaperAlternative(order.CustomedPiza);
-        OrderedMenue cheaperMenue = new OrderedMenue { Id = nextId++, CustomedPiza = recommended };
-        OrderedMenues.Add(cheaperMenue);
-    }
-
-
     public static void Update(OrderedMenue updateOrderedMenue)
     {
         var index = OrderedMenues.FindIndex(p => p.Id == updateOrderedMenue.Id);
@@ -154,16 +146,6 @@ public static class PizzaService
             return;
 
         OrderedMenues[index] = updateOrderedMenue;
-    }
-
-    public static void UpdateRecommended(OrderedMenue updateOrderedMenue)
-    {
-        var index = OrderedMenues.FindIndex(p => p.Id == updateOrderedMenue.Id);
-        if (index == -1)
-            return;
-        Pizza recommended = PizzaSuggester.GetCheaperAlternative(updateOrderedMenue.CustomedPiza);
-        OrderedMenue updateCheaperMenue = new OrderedMenue { Id = updateOrderedMenue.Id, CustomedPiza = recommended };
-        OrderedMenues[index] = updateCheaperMenue;
     }
 
     public static void Delete(int id)
