@@ -83,7 +83,8 @@ public class PizzaController : ControllerBase
             }
 
             OrderedMenue orderedMenueToUpdate = PizzaService.ConvertToDomainModel(orderRequestDto, id);
-            Action<OrderedMenue> persistAction = PizzaService.Update;
+            Action<OrderedMenue> persistAction =
+                 OrderedMenueRequestDto.OrderStatus.recommended == orderRequestDto.orderStatus ? PizzaService.UpdateRecommended : PizzaService.Update;
 
             OrderProcessingResult result = PizzaService.HandleOrder(orderedMenueToUpdate, orderRequestDto.orderStatus, persistAction);
 

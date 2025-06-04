@@ -118,7 +118,7 @@ public static class PizzaService
                 };
 
             default:
-                return new OrderProcessingResult {  ErrorMessage = "不明な注文ステータスです。" };
+                return new OrderProcessingResult { ErrorMessage = "不明な注文ステータスです。" };
         }
 
     }
@@ -146,7 +146,7 @@ public static class PizzaService
         OrderedMenues.Add(cheaperMenue);
     }
 
-    
+
     public static void Update(OrderedMenue updateOrderedMenue)
     {
         var index = OrderedMenues.FindIndex(p => p.Id == updateOrderedMenue.Id);
@@ -154,6 +154,16 @@ public static class PizzaService
             return;
 
         OrderedMenues[index] = updateOrderedMenue;
+    }
+
+    public static void UpdateRecommended(OrderedMenue updateOrderedMenue)
+    {
+        var index = OrderedMenues.FindIndex(p => p.Id == updateOrderedMenue.Id);
+        if (index == -1)
+            return;
+        Pizza recommended = PizzaSuggester.GetCheaperAlternative(updateOrderedMenue.CustomedPiza);
+        OrderedMenue updateCheaperMenue = new OrderedMenue { Id = updateOrderedMenue.Id, CustomedPiza = recommended };
+        OrderedMenues[index] = updateCheaperMenue;
     }
 
     public static void Delete(int id)
