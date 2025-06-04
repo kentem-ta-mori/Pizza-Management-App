@@ -2,27 +2,33 @@ namespace ContosoPizza.Models
 {
     public class Topping
     {
-        public string Id { get; }
+        public ToppingId Id { get; }
         public string Name { get; }
         public int Price { get; }
 
-        private Topping(string id, string name, int price)
+        private Topping(ToppingId id, string name, int price)
         {
             Id = id;
             Name = name;
             Price = price;
         }
 
-        public static readonly Topping Cheese = new("Cheese", "チーズ", 100);
-        public static readonly Topping FriedGarlic = new("FriedGarlic", "フライドガーリック", 150);
-        public static readonly Topping Mozzarella = new("Mozzarella", "モッツァレラチーズ", 300);
-        public static readonly Topping SeafoodMix = new("SeafoodMix", "シーフードミックス", 500);
-        public static readonly Topping Scallops = new("Scallops", "ホタテ", 500);
-        public static readonly Topping Basil = new("Basil", "バジル", 100);
-        public static readonly Topping Tomato = new("Tomato", "トマト", 250);
-        public static readonly Topping Tuna = new("Tuna", "ツナ", 250);
-        public static readonly Topping Corn = new("Corn", "コーン", 250);
-        public static readonly Topping Bacon = new("Bacon", "ベーコン", 250);
+        public enum ToppingId
+        {
+            Cheese, FriedGarlic, Mozzarella, SeafoodMix, Scallops,
+            Basil, Tomato, Tuna, Corn, Bacon
+        }
+
+        public static readonly Topping Cheese = new(ToppingId.Cheese, "チーズ", 100);
+        public static readonly Topping FriedGarlic = new(ToppingId.FriedGarlic, "フライドガーリック", 150);
+        public static readonly Topping Mozzarella = new(ToppingId.Mozzarella, "モッツァレラチーズ", 300);
+        public static readonly Topping SeafoodMix = new(ToppingId.SeafoodMix, "シーフードミックス", 500);
+        public static readonly Topping Scallops = new(ToppingId.Scallops, "ホタテ", 500);
+        public static readonly Topping Basil = new(ToppingId.Basil, "バジル", 100);
+        public static readonly Topping Tomato = new(ToppingId.Tomato, "トマト", 250);
+        public static readonly Topping Tuna = new(ToppingId.Tuna, "ツナ", 250);
+        public static readonly Topping Corn = new(ToppingId.Corn, "コーン", 250);
+        public static readonly Topping Bacon = new(ToppingId.Bacon, "ベーコン", 250);
 
         private static readonly List<Topping> _allToppings = new List<Topping>
         {
@@ -30,7 +36,15 @@ namespace ContosoPizza.Models
             Basil, Tomato, Tuna, Corn, Bacon
         };
         public static IReadOnlyList<Topping> GetAll() => _allToppings.AsReadOnly();
-
+        /// <summary>
+        /// 指定されたID (int) に対応する Topping インスタンスを取得
+        /// </summary>
+        /// <param name="idValue">トッピングIDの整数値。</param>
+        /// <returns>対応する Topping インスタンス。見つからない場合は null。</returns>
+        public static Topping? GetById(int idValue)
+        {
+            return GetAll().FirstOrDefault(t => (int)t.Id == idValue);
+        }
         public override string ToString() => Name;
 
         public override bool Equals(object obj)
@@ -57,12 +71,12 @@ namespace ContosoPizza.Models
 
     public class BasePizza
     {
-        public string Id { get; }
+        public BaseId Id { get; }
         public string Name { get; }
         public int BasePrice { get; }
         public IReadOnlyList<Topping> DefaultToppings { get; }
 
-        private BasePizza(string id, string name, int basePrice, IEnumerable<Topping> defaultToppings)
+        private BasePizza(BaseId id, string name, int basePrice, IEnumerable<Topping> defaultToppings)
         {
             Id = id;
             Name = name;
@@ -70,18 +84,28 @@ namespace ContosoPizza.Models
             DefaultToppings = new List<Topping>(defaultToppings ?? Enumerable.Empty<Topping>()).AsReadOnly();
         }
 
-        public static readonly BasePizza Plain = new("Plain", "プレーン", 1200, new[] { Topping.Tomato });
-        public static readonly BasePizza Margherita = new("Margherita", "マルゲリータ", 1500, new[] { Topping.Cheese, Topping.Tomato, Topping.Mozzarella, Topping.Basil });
-        public static readonly BasePizza Seafood = new("Seafood", "シーフード", 1400, new[] { Topping.Cheese, Topping.SeafoodMix });
-        public static readonly BasePizza Pescatore = new("Pescatore", "ペスカトーレ", 1800, new[] { Topping.Cheese, Topping.SeafoodMix, Topping.Scallops });
-        public static readonly BasePizza Bambino = new("Bambino", "バンビーノ", 1600, new[] { Topping.Cheese, Topping.Tomato, Topping.Tuna, Topping.Corn, Topping.Bacon });
+        public enum BaseId
+        {
+            Plain, Margherita, Seafood, Pescatore, Bambino
+        }
+
+        public static readonly BasePizza Plain = new(BaseId.Plain, "プレーン", 1200, new[] { Topping.Tomato });
+        public static readonly BasePizza Margherita = new(BaseId.Margherita, "マルゲリータ", 1500, new[] { Topping.Cheese, Topping.Tomato, Topping.Mozzarella, Topping.Basil });
+        public static readonly BasePizza Seafood = new(BaseId.Seafood, "シーフード", 1400, new[] { Topping.Cheese, Topping.SeafoodMix });
+        public static readonly BasePizza Pescatore = new(BaseId.Pescatore, "ペスカトーレ", 1800, new[] { Topping.Cheese, Topping.SeafoodMix, Topping.Scallops });
+        public static readonly BasePizza Bambino = new(BaseId.Bambino, "バンビーノ", 1600, new[] { Topping.Cheese, Topping.Tomato, Topping.Tuna, Topping.Corn, Topping.Bacon });
 
         private static readonly List<BasePizza> _allPizzas = new List<BasePizza>
         {
             Plain, Margherita, Seafood, Pescatore, Bambino
         };
         public static IReadOnlyList<BasePizza> GetAll() => _allPizzas.AsReadOnly();
-
+       
+        public static BasePizza? GetById(int idValue)
+        {
+            return GetAll().FirstOrDefault(bp => (int)bp.Id == idValue);
+        }
+        
         public override string ToString() => Name;
 
         public override bool Equals(object obj)

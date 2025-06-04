@@ -1,3 +1,4 @@
+using ContosoPizza.DTOs;
 using ContosoPizza.Models;
 
 namespace ContosoPizza.Services;
@@ -5,6 +6,7 @@ namespace ContosoPizza.Services;
 public static class PizzaService
 {
     static List<OrderedMenue> OrderedMenues { get; }
+    static int nextId = 3;
 
     static PizzaService()
     {
@@ -24,22 +26,59 @@ public static class PizzaService
 
     public static List<OrderedMenue> GetAll() => OrderedMenues;
 
-    // public static Pizza? Get(int id) => Pizzas.FirstOrDefault(p => p.Id == id);
+    public static OrderedMenue? Get(int id) => OrderedMenues.FirstOrDefault(o => o.Id == id);
 
-    // public static void Add(Pizza pizza)
-    // {
-    //     pizza.Id = nextId++;
-    //     Pizzas.Add(pizza);
-    // }
+    public static OrderedMenue ProcessOrder(OrderedMenueRequestDto orderRequestDto)
+    {
+        BasePizza selectedBasePizza = BasePizza.GetById(orderRequestDto.CustomedPiza.BasePizzaId);
+        if (selectedBasePizza == null)
+        {
+            throw new ArgumentException($"Invalid BasePizzaId: {orderRequestDto.CustomedPiza.BasePizzaId}");
+        }
 
-    // public static void Delete(int id)
-    // {
-    //     var pizza = Get(id);
-    //     if(pizza is null)
-    //         return;
+        // オプショントッピングのリストを取得
+        var selectedOptionToppings = new List<Topping>();
+        if (orderRequestDto.CustomedPiza.OptionToppingIds != null)
+        {
+            foreach (int toppingId in orderRequestDto.CustomedPiza.OptionToppingIds)
+            {
+                Topping selectedTopping = Topping.GetById(toppingId);
+                if (selectedTopping == null)
+                {
+                    throw new ArgumentException($"Invalid ToppingId: {toppingId}");
+                }
+                selectedOptionToppings.Add(selectedTopping);
+            }
+        }
 
-    //     Pizzas.Remove(pizza);
-    // }
+        Pizza pizzaDomainModel = new Pizza(
+            selectedBasePizza,
+            selectedOptionToppings.ToArray()
+        );
+
+        OrderedMenue orderedMenueDomainModel = new OrderedMenue
+        {
+            Id = 0,// 採番についてはいったん考慮しない（後ほどstaticな値をインクリメントする）
+            CustomedPiza = pizzaDomainModel
+        };
+
+        return orderedMenueDomainModel;
+    }
+
+    public static void Add(OrderedMenue order)
+    {
+        order.Id = nextId++;
+        OrderedMenues.Add(order);
+    }
+
+    public static void Delete(int id)
+    {
+        var order = Get(id);
+        if (order is null)
+            return;
+
+        OrderedMenues.Remove(order);
+    }
 
     // public static void Update(Pizza pizza)
     // {

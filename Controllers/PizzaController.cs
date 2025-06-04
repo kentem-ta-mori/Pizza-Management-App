@@ -1,3 +1,4 @@
+using ContosoPizza.DTOs;
 using ContosoPizza.Models;
 using ContosoPizza.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -16,23 +17,34 @@ public class PizzaController : ControllerBase
     public ActionResult<List<OrderedMenue>> GetAll() =>
     PizzaService.GetAll();
 
-    // [HttpGet("{id}")]
-    // public ActionResult<Pizza> Get(int id)
-    // {
-    //     var pizza = PizzaService.Get(id);
+    [HttpGet("{id}")]
+    public ActionResult<OrderedMenue> Get(int id)
+    {
+        var order = PizzaService.Get(id);
 
-    //     if (pizza == null)
-    //         return NotFound();
+        if (order == null)
+            return NotFound();
 
-    //     return pizza;
-    // }
+        return order;
+    }
 
-    // [HttpPost]
-    // public IActionResult Create(Pizza pizza)
-    // {
-    //     PizzaService.Add(pizza);
-    //     return CreatedAtAction(nameof(Get), new { id = pizza.Id }, pizza);
-    // }
+    [HttpPost]
+    public ActionResult CreateOrder([FromBody] OrderedMenueRequestDto orderRequestDto)
+    {
+        try {
+            // リクエストDTOを永続化用モデルにコンバート
+            OrderedMenue orderedMenue = PizzaService.ProcessOrder(orderRequestDto);
+            // 永続化（現在はstaticなListに追加するだけ）
+            PizzaService.Add(orderedMenue);
+
+            // 暫定で作成したオブジェクトを返却する
+            return CreatedAtAction(nameof(Get), new { id = orderedMenue.Id }, orderedMenue);
+        }
+        catch (System.Exception ex)
+        {
+            return StatusCode(500, ex);
+        }
+    }
 
     // [HttpPut("{id}")]
     // public IActionResult Update(int id, Pizza pizza)
@@ -49,16 +61,16 @@ public class PizzaController : ControllerBase
     //     return NoContent();
     // }
 
-    // [HttpDelete("{id}")]
-    // public IActionResult Delete(int id)
-    // {
-    //     var pizza = PizzaService.Get(id);
+    [HttpDelete("{id}")]
+    public IActionResult Delete(int id)
+    {
+        var pizza = PizzaService.Get(id);
 
-    //     if (pizza is null)
-    //         return NotFound();
+        if (pizza is null)
+            return NotFound();
 
-    //     PizzaService.Delete(id);
+        PizzaService.Delete(id);
 
-    //     return NoContent();
-    // }
+        return NoContent();
+    }
 }

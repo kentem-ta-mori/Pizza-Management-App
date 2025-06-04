@@ -14,18 +14,18 @@ public class OrderedMenue
 
 public class Pizza
 {
-    public BasePizza Base { get; }
+    public BasePizza BasePizza { get; }
 
     public IReadOnlyList<Topping>? OptionTopings { get; }
 
     public int TotalAmount { get; }
-    public Pizza( BasePizza type, Topping[]? topings)
+    public Pizza( BasePizza basePizza, Topping[]? optionTopings)
     {
         
-        this.Base = type;
-        this.OptionTopings = topings;
+        this.BasePizza = basePizza;
+        this.OptionTopings = optionTopings;
 
-        int calculatedTotalAmount = this.Base.BasePrice;
+        int calculatedTotalAmount = this.BasePizza.BasePrice;
         if (this.OptionTopings != null)
         {
             foreach (Topping topping in this.OptionTopings)
