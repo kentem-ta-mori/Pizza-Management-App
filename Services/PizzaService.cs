@@ -28,7 +28,7 @@ public static class PizzaService
 
     public static OrderedMenue? Get(int id) => OrderedMenues.FirstOrDefault(o => o.Id == id);
 
-    public static OrderedMenue ProcessOrder(OrderedMenueRequestDto orderRequestDto)
+    public static OrderedMenue ConvertToDomainModel(OrderedMenueRequestDto orderRequestDto, int? existingId = null)
     {
         BasePizza selectedBasePizza = BasePizza.GetById(orderRequestDto.CustomedPiza.BasePizzaId);
         if (selectedBasePizza == null)
@@ -58,11 +58,69 @@ public static class PizzaService
 
         OrderedMenue orderedMenueDomainModel = new OrderedMenue
         {
-            Id = 0,// 採番についてはいったん考慮しない（後ほどstaticな値をインクリメントする）
+            Id = existingId ?? 0,
             CustomedPiza = pizzaDomainModel
         };
 
         return orderedMenueDomainModel;
+    }
+
+    public static OrderProcessingResult HandleOrder(
+        OrderedMenue orderedMenue,
+        OrderedMenueRequestDto.OrderStatus orderStatus,
+        Action<OrderedMenue> persistOperation
+    )
+    {
+        switch (orderStatus)
+        {
+            case OrderedMenueRequestDto.OrderStatus.firstTime:
+                bool hasCheaperAlternative = PizzaSuggester.CheaperAlternativeAvailable(orderedMenue.CustomedPiza);
+                if (hasCheaperAlternative)
+                {
+                    Pizza? cheaperPizza = PizzaSuggester.GetCheaperAlternative(orderedMenue.CustomedPiza);
+                    return new OrderProcessingResult
+                    {
+                        ProcessedOrder = orderedMenue,
+                        SuggestsAlternative = true,
+                        SuggestedPizza = cheaperPizza,
+                    };
+                }
+                else
+                {
+                    // 最安の選択であったため、永続化処理を実行
+                    persistOperation(orderedMenue);
+                    return new OrderProcessingResult
+                    {
+                        ProcessedOrder = orderedMenue,
+                    };
+                }
+
+            case OrderedMenueRequestDto.OrderStatus.recommended:
+                Pizza? recommendedPizza = PizzaSuggester.GetCheaperAlternative(orderedMenue.CustomedPiza);
+                if (recommendedPizza == null)
+                {
+                    // 推奨が見つからない場合のエラーハンドリング
+                    return new OrderProcessingResult { ErrorMessage = "推奨されるピザ構成が見つかりませんでした。" };
+                }
+                orderedMenue.CustomedPiza = recommendedPizza;
+
+                persistOperation(orderedMenue); // 永続化処理を実行
+                return new OrderProcessingResult
+                {
+                    ProcessedOrder = orderedMenue,
+                };
+
+            case OrderedMenueRequestDto.OrderStatus.original:
+                persistOperation(orderedMenue); // 永続化処理を実行
+                return new OrderProcessingResult
+                {
+                    ProcessedOrder = orderedMenue,
+                };
+
+            default:
+                return new OrderProcessingResult {  ErrorMessage = "不明な注文ステータスです。" };
+        }
+
     }
 
     public static bool NewOrderCompleted(OrderedMenue newOrder)
@@ -81,12 +139,21 @@ public static class PizzaService
         OrderedMenues.Add(order);
     }
 
-    public static OrderedMenue AddRecommended(OrderedMenue order)
+    public static void AddRecommended(OrderedMenue order)
     {
         Pizza recommended = PizzaSuggester.GetCheaperAlternative(order.CustomedPiza);
         OrderedMenue cheaperMenue = new OrderedMenue { Id = nextId++, CustomedPiza = recommended };
         OrderedMenues.Add(cheaperMenue);
-        return cheaperMenue;
+    }
+
+    
+    public static void Update(OrderedMenue updateOrderedMenue)
+    {
+        var index = OrderedMenues.FindIndex(p => p.Id == updateOrderedMenue.Id);
+        if (index == -1)
+            return;
+
+        OrderedMenues[index] = updateOrderedMenue;
     }
 
     public static void Delete(int id)
@@ -98,12 +165,4 @@ public static class PizzaService
         OrderedMenues.Remove(order);
     }
 
-    // public static void Update(Pizza pizza)
-    // {
-    //     var index = Pizzas.FindIndex(p => p.Id == pizza.Id);
-    //     if(index == -1)
-    //         return;
-
-    //     Pizzas[index] = pizza;
-    // }
 }

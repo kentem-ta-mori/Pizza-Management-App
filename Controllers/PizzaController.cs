@@ -33,53 +33,93 @@ public class PizzaController : ControllerBase
     {
         try
         {
-            // リクエストDTOを永続化用モデルにコンバート
-            OrderedMenue orderedMenue = PizzaService.ProcessOrder(orderRequestDto);
-            switch (orderRequestDto.orderStatus)
+            OrderedMenue orderedMenue = PizzaService.ConvertToDomainModel(orderRequestDto, null);
+            Action<OrderedMenue> persistAction =
+                OrderedMenueRequestDto.OrderStatus.recommended == orderRequestDto.orderStatus ? PizzaService.Add : PizzaService.AddRecommended;
+            OrderProcessingResult result = PizzaService.HandleOrder(orderedMenue, orderRequestDto.orderStatus, persistAction);
+
+            if (!string.IsNullOrEmpty(result.ErrorMessage))
             {
-                case OrderedMenueRequestDto.OrderStatus.firstTime:
-                    if (PizzaService.NewOrderCompleted(orderedMenue))
-                    {
-                        // 最安の選択であったため、登録完了
-                        return CreatedAtAction(nameof(Get), new { id = orderedMenue.Id }, orderedMenue);
-                    }
-                    else
-                    {
-                        // より安い選択肢があるため、一度確認
-                        return StatusCode(200);
-                    }
-
-                case OrderedMenueRequestDto.OrderStatus.recommended:
-                    OrderedMenue ordered = PizzaService.AddRecommended(orderedMenue);
-                    return CreatedAtAction(nameof(Get), new { id = ordered.Id }, ordered);
-
-                case OrderedMenueRequestDto.OrderStatus.original:
-                    PizzaService.Add(orderedMenue);
-                    return CreatedAtAction(nameof(Get), new { id = orderedMenue.Id }, orderedMenue);
-
-                default: return StatusCode(500);
+                return BadRequest(new { message = result.ErrorMessage });
             }
+
+            if (result.SuggestsAlternative)
+            {
+                return Ok(new
+                {
+                    message = "より経済的な選択肢があります。ご確認ください。",
+                    suggestedPizza = result.SuggestedPizza,
+                    originalSelection = result.ProcessedOrder
+                });
+            }
+            else if (result.ProcessedOrder != null)
+            {
+                return CreatedAtAction(nameof(Get), new { id = result.ProcessedOrder.Id }, result.ProcessedOrder);
+            }
+            else
+            {
+                return StatusCode(500, new { message = "注文処理中に予期せぬエラーが発生しました。" });
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex);
+            return StatusCode(500, new { message = "サーバー内部でエラーが発生しました。" });
         }
     }
 
-    // [HttpPut("{id}")]
-    // public IActionResult Update(int id, Pizza pizza)
-    // {
-    //     if (id != pizza.Id)
-    //         return BadRequest();
+    [HttpPut("{id}")]
+    public ActionResult UpdateOrder(int id, [FromBody] OrderedMenueRequestDto orderRequestDto)
+    {
+        try
+        {
+            var existingOrder = PizzaService.Get(id);
+            if (existingOrder == null)
+            {
+                return NotFound(new { message = $"ID {id} の注文は見つかりません。" });
+            }
 
-    //     var existingPizza = PizzaService.Get(id);
-    //     if (existingPizza is null)
-    //         return NotFound();
+            OrderedMenue orderedMenueToUpdate = PizzaService.ConvertToDomainModel(orderRequestDto, id);
+            Action<OrderedMenue> persistAction = PizzaService.Update;
 
-    //     PizzaService.Update(pizza);
+            OrderProcessingResult result = PizzaService.HandleOrder(orderedMenueToUpdate, orderRequestDto.orderStatus, persistAction);
 
-    //     return NoContent();
-    // }
+            if (!string.IsNullOrEmpty(result.ErrorMessage))
+            {
+                return BadRequest(new { message = result.ErrorMessage });
+            }
+
+            if (result.SuggestsAlternative)
+            {
+                return Ok(new
+                {
+                    message = "より経済的な選択肢があります。ご確認ください。",
+                    suggestedPizza = result.SuggestedPizza,
+                    originalSelection = result.ProcessedOrder
+                });
+            }
+            else if (result.ProcessedOrder != null)
+            {
+                return NoContent();
+            }
+            else
+            {
+                return StatusCode(500, new { message = "注文処理中に予期せぬエラーが発生しました。" });
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            // TODO: Log the exception (ex)
+            return StatusCode(500, new { message = "サーバー内部でエラーが発生しました。" });
+        }
+    }
 
     [HttpDelete("{id}")]
     public IActionResult Delete(int id)

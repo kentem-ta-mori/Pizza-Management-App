@@ -5,7 +5,7 @@ public static class PizzaSuggester
     public static bool CheaperAlternativeAvailable(Pizza oridinal)
     {
         // もともとのピザと最安のピザのベースが同じかの判定を返す
-        return !oridinal.BasePizza.Equals(GetCheaperAlternative(oridinal));
+        return !oridinal.BasePizza.Equals(GetCheaperAlternative(oridinal).BasePizza);
     }
 
     public static Pizza GetCheaperAlternative(Pizza oridinal)
