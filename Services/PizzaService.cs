@@ -65,10 +65,28 @@ public static class PizzaService
         return orderedMenueDomainModel;
     }
 
+    public static bool NewOrderCompleted(OrderedMenue newOrder)
+    {
+        // より安い選択肢が存在する場合は、一度ユーザに確認するため、登録しない
+        if (PizzaSuggester.CheaperAlternativeAvailable(newOrder.CustomedPiza)) return false;
+
+        Add(newOrder);
+        return true;
+
+    }
+
     public static void Add(OrderedMenue order)
     {
         order.Id = nextId++;
         OrderedMenues.Add(order);
+    }
+
+    public static OrderedMenue AddRecommended(OrderedMenue order)
+    {
+        Pizza recommended = PizzaSuggester.GetCheaperAlternative(order.CustomedPiza);
+        OrderedMenue cheaperMenue = new OrderedMenue { Id = nextId++, CustomedPiza = recommended };
+        OrderedMenues.Add(cheaperMenue);
+        return cheaperMenue;
     }
 
     public static void Delete(int id)

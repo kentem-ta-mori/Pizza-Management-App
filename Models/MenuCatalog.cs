@@ -89,7 +89,7 @@ namespace ContosoPizza.Models
             Plain, Margherita, Seafood, Pescatore, Bambino
         }
 
-        public static readonly BasePizza Plain = new(BaseId.Plain, "プレーン", 1200, new[] { Topping.Tomato });
+        public static readonly BasePizza Plain = new(BaseId.Plain, "プレーン", 1200, new[] { Topping.Tomato, Topping.Cheese });
         public static readonly BasePizza Margherita = new(BaseId.Margherita, "マルゲリータ", 1500, new[] { Topping.Cheese, Topping.Tomato, Topping.Mozzarella, Topping.Basil });
         public static readonly BasePizza Seafood = new(BaseId.Seafood, "シーフード", 1400, new[] { Topping.Cheese, Topping.SeafoodMix });
         public static readonly BasePizza Pescatore = new(BaseId.Pescatore, "ペスカトーレ", 1800, new[] { Topping.Cheese, Topping.SeafoodMix, Topping.Scallops });
@@ -105,7 +105,7 @@ namespace ContosoPizza.Models
         {
             return GetAll().FirstOrDefault(bp => (int)bp.Id == idValue);
         }
-        
+
         public override string ToString() => Name;
 
         public override bool Equals(object obj)

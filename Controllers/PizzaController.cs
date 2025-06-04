@@ -31,16 +31,36 @@ public class PizzaController : ControllerBase
     [HttpPost]
     public ActionResult CreateOrder([FromBody] OrderedMenueRequestDto orderRequestDto)
     {
-        try {
+        try
+        {
             // リクエストDTOを永続化用モデルにコンバート
             OrderedMenue orderedMenue = PizzaService.ProcessOrder(orderRequestDto);
-            // 永続化（現在はstaticなListに追加するだけ）
-            PizzaService.Add(orderedMenue);
+            switch (orderRequestDto.orderStatus)
+            {
+                case OrderedMenueRequestDto.OrderStatus.firstTime:
+                    if (PizzaService.NewOrderCompleted(orderedMenue))
+                    {
+                        // 最安の選択であったため、登録完了
+                        return CreatedAtAction(nameof(Get), new { id = orderedMenue.Id }, orderedMenue);
+                    }
+                    else
+                    {
+                        // より安い選択肢があるため、一度確認
+                        return StatusCode(200);
+                    }
 
-            // 暫定で作成したオブジェクトを返却する
-            return CreatedAtAction(nameof(Get), new { id = orderedMenue.Id }, orderedMenue);
+                case OrderedMenueRequestDto.OrderStatus.recommended:
+                    OrderedMenue ordered = PizzaService.AddRecommended(orderedMenue);
+                    return CreatedAtAction(nameof(Get), new { id = ordered.Id }, ordered);
+
+                case OrderedMenueRequestDto.OrderStatus.original:
+                    PizzaService.Add(orderedMenue);
+                    return CreatedAtAction(nameof(Get), new { id = orderedMenue.Id }, orderedMenue);
+
+                default: return StatusCode(500);
+            }
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             return StatusCode(500, ex);
         }
