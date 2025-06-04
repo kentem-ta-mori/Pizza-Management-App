@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build", // この "label" が "build" である必要があります
+            "command": "dotnet",
+            "type": "process", // または "shell"
+            "args": [
+                "build",
+                // "${workspaceFolder}/YourProjectName.csproj", // プロジェクトファイル名を指定 (多くの場合、自動で解決されます)
+                // 以下はオプションの引数
+                // "/property:GenerateFullPaths=true",
+                // "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": { // "group" はビルドタスクであることを示すのに役立ちます
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+        // 他のタスクが定義されている場合もある
+    ]
+}
