@@ -66,7 +66,7 @@ public class PizzaController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = "サーバー内部でエラーが発生しました。" });
+            return StatusCode(500, new { message = "サーバー内部でエラーが発生しました: " + ex });
         }
     }
 
@@ -115,8 +115,7 @@ public class PizzaController : ControllerBase
         }
         catch (Exception ex)
         {
-            // TODO: Log the exception (ex)
-            return StatusCode(500, new { message = "サーバー内部でエラーが発生しました。" });
+            return StatusCode(500, new { message = "サーバー内部でエラーが発生しました: " + ex });
         }
     }
 

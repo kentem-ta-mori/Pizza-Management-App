@@ -30,7 +30,7 @@ public static class PizzaService
 
     public static OrderedMenue ConvertToDomainModel(OrderedMenueRequestDto orderRequestDto, int? existingId = null)
     {
-        BasePizza selectedBasePizza = BasePizza.GetById(orderRequestDto.CustomedPiza.BasePizzaId);
+        BasePizza? selectedBasePizza = BasePizza.GetById(orderRequestDto.CustomedPiza.BasePizzaId);
         if (selectedBasePizza == null)
         {
             throw new ArgumentException($"Invalid BasePizzaId: {orderRequestDto.CustomedPiza.BasePizzaId}");
@@ -42,7 +42,7 @@ public static class PizzaService
         {
             foreach (int toppingId in orderRequestDto.CustomedPiza.OptionToppingIds)
             {
-                Topping selectedTopping = Topping.GetById(toppingId);
+                Topping? selectedTopping = Topping.GetById(toppingId);
                 if (selectedTopping == null)
                 {
                     throw new ArgumentException($"Invalid ToppingId: {toppingId}");

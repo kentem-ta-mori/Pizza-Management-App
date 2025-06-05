@@ -47,7 +47,7 @@ namespace ContosoPizza.Models
         }
         public override string ToString() => Name;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null || obj.GetType() != GetType())
             {
@@ -58,7 +58,7 @@ namespace ContosoPizza.Models
 
         public override int GetHashCode() => Id.GetHashCode();
 
-        public static bool operator ==(Topping left, Topping right)
+        public static bool operator ==(Topping? left, Topping? right)
         {
             if (left is null)
             {
@@ -100,7 +100,7 @@ namespace ContosoPizza.Models
             Plain, Margherita, Seafood, Pescatore, Bambino
         };
         public static IReadOnlyList<BasePizza> GetAll() => _allPizzas.AsReadOnly();
-       
+
         public static BasePizza? GetById(int idValue)
         {
             return GetAll().FirstOrDefault(bp => (int)bp.Id == idValue);
@@ -108,7 +108,7 @@ namespace ContosoPizza.Models
 
         public override string ToString() => Name;
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is null || obj.GetType() != GetType())
             {
@@ -118,7 +118,7 @@ namespace ContosoPizza.Models
         }
         public override int GetHashCode() => Id.GetHashCode();
 
-        public static bool operator ==(BasePizza left, BasePizza right)
+        public static bool operator ==(BasePizza? left, BasePizza? right)
         {
             if (left is null)
             {
