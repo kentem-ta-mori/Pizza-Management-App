@@ -1,12 +1,12 @@
 namespace ContosoPizza.DTOs
 {
-    public class OrderedMenueRequestDto
+    public record OrderedMenueRequestDto
     {
         public enum OrderStatus {
             firstTime, recommended, original
         }
-        public int Id { get; set; }
-        public required PizzaRequestDto CustomedPiza { get; set; }
-        public OrderStatus orderStatus { get; set; } 
+        public int Id { get; init; }
+        public required PizzaRequestDto CustomedPiza { get; init; }
+        public OrderStatus orderStatus { get; init; } 
     }
 }

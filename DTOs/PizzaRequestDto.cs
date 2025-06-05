@@ -2,9 +2,9 @@ namespace ContosoPizza.DTOs
 {
     using System.Collections.Generic;
 
-    public class PizzaRequestDto
+    public record PizzaRequestDto
     {
-        public int BasePizzaId { get; set; }
-        public List<int>? OptionToppingIds { get; set; } 
+        public int BasePizzaId { get; init; }
+        public List<int>? OptionToppingIds { get; init; } 
     }
 }

@@ -102,12 +102,13 @@ public static class PizzaService
                     // 推奨が見つからない場合のエラーハンドリング
                     return new OrderProcessingResult { ErrorMessage = "推奨されるピザ構成が見つかりませんでした。" };
                 }
-                orderedMenue.CustomedPiza = recommendedPizza;
+                
+                OrderedMenue recommendedMenue = new OrderedMenue { Id = orderedMenue.Id, CustomedPiza = recommendedPizza };
 
-                persistOperation(orderedMenue); // 永続化処理を実行
+                persistOperation(recommendedMenue); // 永続化処理を実行
                 return new OrderProcessingResult
                 {
-                    ProcessedOrder = orderedMenue,
+                    ProcessedOrder = recommendedMenue,
                 };
 
             case OrderedMenueRequestDto.OrderStatus.original:

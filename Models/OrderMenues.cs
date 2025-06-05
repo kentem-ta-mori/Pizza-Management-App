@@ -6,7 +6,7 @@ public class OrderedMenue
 {
     public int Id { get; set; }
 
-    public required Pizza CustomedPiza { get; set; }
+    public required Pizza CustomedPiza { get; init; }
 
     // ピザが複数にならない限り不要
     // public int TotalAmount { get; set; }
