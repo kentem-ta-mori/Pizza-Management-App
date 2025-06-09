@@ -18,7 +18,7 @@ namespace ContosoPizza.Models
             Cheese, FriedGarlic, Mozzarella, SeafoodMix, Scallops,
             Basil, Tomato, Tuna, Corn, Bacon
         }
-
+        // TODO: Readmeが必要では？
         public static readonly Topping Cheese = new(ToppingId.Cheese, "チーズ", 100);
         public static readonly Topping FriedGarlic = new(ToppingId.FriedGarlic, "フライドガーリック", 150);
         public static readonly Topping Mozzarella = new(ToppingId.Mozzarella, "モッツァレラチーズ", 300);

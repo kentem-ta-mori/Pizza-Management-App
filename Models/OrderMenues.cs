@@ -2,7 +2,7 @@ using Microsoft.OpenApi.Extensions;
 
 namespace ContosoPizza.Models;
 
-public class OrderedMenue
+public class OrderedMenu
 {
     public int Id { get; set; }
 

@@ -5,30 +5,30 @@ namespace ContosoPizza.Services;
 
 public static class PizzaService
 {
-    static List<OrderedMenue> OrderedMenues { get; }
+    static List<OrderedMenu> OrderedMenus { get; }
     static int nextId = 3;
 
     static PizzaService()
     {
-        OrderedMenues = new List<OrderedMenue>
+        OrderedMenus = new List<OrderedMenu>
         {
 
-            new OrderedMenue {
+            new OrderedMenu {
                 Id=1,
                 CustomedPiza=new Pizza(BasePizza.Plain, null)
             },
-            new OrderedMenue {
+            new OrderedMenu {
                 Id=2,
                 CustomedPiza=new Pizza(BasePizza.Bambino, [Topping.Cheese])
             }
         };
     }
 
-    public static List<OrderedMenue> GetAll() => OrderedMenues;
+    public static List<OrderedMenu> GetAll() => OrderedMenus;
 
-    public static OrderedMenue? Get(int id) => OrderedMenues.FirstOrDefault(o => o.Id == id);
+    public static OrderedMenu? Get(int id) => OrderedMenus.FirstOrDefault(o => o.Id == id);
 
-    public static OrderedMenue ConvertToDomainModel(OrderedMenueRequestDto orderRequestDto, int? existingId = null)
+    public static OrderedMenu ConvertToDomainModel(OrderedMenueRequestDto orderRequestDto, int? existingId = null)
     {
         BasePizza? selectedBasePizza = BasePizza.GetById(orderRequestDto.CustomedPiza.BasePizzaId);
         if (selectedBasePizza == null)
@@ -51,12 +51,12 @@ public static class PizzaService
             }
         }
 
-        Pizza pizzaDomainModel = new Pizza(
+        var pizzaDomainModel = new Pizza(
             selectedBasePizza,
             selectedOptionToppings.ToArray()
         );
 
-        OrderedMenue orderedMenueDomainModel = new OrderedMenue
+        var orderedMenueDomainModel = new OrderedMenu
         {
             Id = existingId ?? 0,
             CustomedPiza = pizzaDomainModel
@@ -66,21 +66,21 @@ public static class PizzaService
     }
 
     public static OrderProcessingResult HandleOrder(
-        OrderedMenue orderedMenue,
+        OrderedMenu orderedMenu,
         OrderedMenueRequestDto.OrderStatus orderStatus,
-        Action<OrderedMenue> persistOperation
+        Action<OrderedMenu> persistOperation
     )
     {
         switch (orderStatus)
         {
             case OrderedMenueRequestDto.OrderStatus.firstTime:
-                bool hasCheaperAlternative = PizzaSuggester.CheaperAlternativeAvailable(orderedMenue.CustomedPiza);
+                bool hasCheaperAlternative = PizzaSuggester.CheaperAlternativeAvailable(orderedMenu.CustomedPiza);
                 if (hasCheaperAlternative)
                 {
-                    Pizza? cheaperPizza = PizzaSuggester.GetCheaperAlternative(orderedMenue.CustomedPiza);
+                    Pizza? cheaperPizza = PizzaSuggester.GetCheaperAlternative(orderedMenu.CustomedPiza);
                     return new OrderProcessingResult
                     {
-                        ProcessedOrder = orderedMenue,
+                        ProcessedOrder = orderedMenu,
                         SuggestsAlternative = true,
                         SuggestedPizza = cheaperPizza,
                     };
@@ -88,34 +88,36 @@ public static class PizzaService
                 else
                 {
                     // 最安の選択であったため、永続化処理を実行
-                    persistOperation(orderedMenue);
+                    persistOperation(orderedMenu);
                     return new OrderProcessingResult
                     {
-                        ProcessedOrder = orderedMenue,
+                        ProcessedOrder = orderedMenu,
                     };
                 }
 
             case OrderedMenueRequestDto.OrderStatus.recommended:
-                Pizza? recommendedPizza = PizzaSuggester.GetCheaperAlternative(orderedMenue.CustomedPiza);
+                Pizza? recommendedPizza = PizzaSuggester.GetCheaperAlternative(orderedMenu.CustomedPiza);
                 if (recommendedPizza == null)
                 {
                     // 推奨が見つからない場合のエラーハンドリング
                     return new OrderProcessingResult { ErrorMessage = "推奨されるピザ構成が見つかりませんでした。" };
                 }
-                
-                OrderedMenue recommendedMenue = new OrderedMenue { Id = orderedMenue.Id, CustomedPiza = recommendedPizza };
 
-                persistOperation(recommendedMenue); // 永続化処理を実行
+                // OrderedMenue recommendedMenue = new OrderedMenue { Id = orderedMenue.Id, CustomedPiza = recommendedPizza };
+                var recommendedMenu = new OrderedMenu { Id = orderedMenu.Id, CustomedPiza = recommendedPizza };
+                // OrderedMenue recommendedMenue = new() { Id = orderedMenue.Id, CustomedPiza = recommendedPizza };
+
+                persistOperation(recommendedMenu); // 永続化処理を実行
                 return new OrderProcessingResult
                 {
-                    ProcessedOrder = recommendedMenue,
+                    ProcessedOrder = recommendedMenu,
                 };
 
             case OrderedMenueRequestDto.OrderStatus.original:
-                persistOperation(orderedMenue); // 永続化処理を実行
+                persistOperation(orderedMenu); // 永続化処理を実行
                 return new OrderProcessingResult
                 {
-                    ProcessedOrder = orderedMenue,
+                    ProcessedOrder = orderedMenu,
                 };
 
             default:
@@ -124,7 +126,7 @@ public static class PizzaService
 
     }
 
-    public static bool NewOrderCompleted(OrderedMenue newOrder)
+    public static bool NewOrderCompleted(OrderedMenu newOrder)
     {
         // より安い選択肢が存在する場合は、一度ユーザに確認するため、登録しない
         if (PizzaSuggester.CheaperAlternativeAvailable(newOrder.CustomedPiza)) return false;
@@ -134,19 +136,19 @@ public static class PizzaService
 
     }
 
-    public static void Add(OrderedMenue order)
+    public static void Add(OrderedMenu order)
     {
         order.Id = nextId++;
-        OrderedMenues.Add(order);
+        OrderedMenus.Add(order);
     }
 
-    public static void Update(OrderedMenue updateOrderedMenue)
+    public static void Update(OrderedMenu updateOrderedMenue)
     {
-        var index = OrderedMenues.FindIndex(p => p.Id == updateOrderedMenue.Id);
+        var index = OrderedMenus.FindIndex(p => p.Id == updateOrderedMenue.Id);
         if (index == -1)
             return;
 
-        OrderedMenues[index] = updateOrderedMenue;
+        OrderedMenus[index] = updateOrderedMenue;
     }
 
     public static void Delete(int id)
@@ -155,7 +157,7 @@ public static class PizzaService
         if (order is null)
             return;
 
-        OrderedMenues.Remove(order);
+        OrderedMenus.Remove(order);
     }
 
 }

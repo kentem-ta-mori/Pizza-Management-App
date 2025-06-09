@@ -9,16 +9,16 @@ namespace ContosoPizza.Controllers;
 [Route("[controller]")]
 public class PizzaController : ControllerBase
 {
-    public PizzaController()
-    {
-    }
+    // public PizzaController()
+    // {
+    // }
 
     [HttpGet]
-    public ActionResult<List<OrderedMenue>> GetAll() =>
+    public ActionResult<List<OrderedMenu>> GetAll() =>
     PizzaService.GetAll();
 
     [HttpGet("{id}")]
-    public ActionResult<OrderedMenue> Get(int id)
+    public ActionResult<OrderedMenu> Get(int id)
     {
         var order = PizzaService.Get(id);
 
@@ -33,8 +33,8 @@ public class PizzaController : ControllerBase
     {
         try
         {
-            OrderedMenue orderedMenue = PizzaService.ConvertToDomainModel(orderRequestDto, null);
-            Action<OrderedMenue> persistAction = PizzaService.Add;
+            OrderedMenu orderedMenue = PizzaService.ConvertToDomainModel(orderRequestDto, null);
+            Action<OrderedMenu> persistAction = PizzaService.Add;
             OrderProcessingResult result = PizzaService.HandleOrder(orderedMenue, orderRequestDto.orderStatus, persistAction);
 
             if (!string.IsNullOrEmpty(result.ErrorMessage))
@@ -57,7 +57,7 @@ public class PizzaController : ControllerBase
             }
             else
             {
-                return StatusCode(500, new { message = "注文処理中に予期せぬエラーが発生しました。" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "注文処理中に予期せぬエラーが発生しました。" });
             }
         }
         catch (ArgumentException ex)
@@ -81,8 +81,8 @@ public class PizzaController : ControllerBase
                 return NotFound(new { message = $"ID {id} の注文は見つかりません。" });
             }
 
-            OrderedMenue orderedMenueToUpdate = PizzaService.ConvertToDomainModel(orderRequestDto, id);
-            Action<OrderedMenue> persistAction = PizzaService.Update;
+            OrderedMenu orderedMenueToUpdate = PizzaService.ConvertToDomainModel(orderRequestDto, id);
+            Action<OrderedMenu> persistAction = PizzaService.Update;
 
             OrderProcessingResult result = PizzaService.HandleOrder(orderedMenueToUpdate, orderRequestDto.orderStatus, persistAction);
 
@@ -106,7 +106,7 @@ public class PizzaController : ControllerBase
             }
             else
             {
-                return StatusCode(500, new { message = "注文処理中に予期せぬエラーが発生しました。" });
+                return BadRequest( new { message = "注文処理中に予期せぬエラーが発生しました。" });
             }
         }
         catch (ArgumentException ex)
