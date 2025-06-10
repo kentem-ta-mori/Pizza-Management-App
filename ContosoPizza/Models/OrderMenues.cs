@@ -1,5 +1,3 @@
-using Microsoft.OpenApi.Extensions;
-
 namespace ContosoPizza.Models;
 
 public class OrderedMenu
@@ -14,11 +12,13 @@ public class OrderedMenu
 
 public class Pizza
 {
-    public BasePizza BasePizza { get; }
+    public BasePizza BasePizza { get; init; }
 
-    public IReadOnlyList<Topping>? OptionTopings { get; }
+    public IReadOnlyList<Topping>? OptionTopings { get; init; }
 
-    public int TotalAmount { get; }
+    public int TotalAmount { get; init; }
+
+    public Pizza() { }
     public Pizza( BasePizza basePizza, Topping[]? optionTopings)
     {
         
