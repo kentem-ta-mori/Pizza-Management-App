@@ -1,3 +1,4 @@
+using ContosoPizza.Factories;
 using ContosoPizza.Interfaces;
 using ContosoPizza.Repositories.Mocks;
 using ContosoPizza.Services;
@@ -15,7 +16,8 @@ builder.Services.AddScoped<IToppingRepository, MockToppingRepository>();
 builder.Services.AddScoped<IBasePizzaRepository, MockBasePizzaRepository>();
 // インメモリのモックリポジトリであるためシングルトンで注入
 builder.Services.AddSingleton<IOrderedMenuRepository, MockOrderedMenuRepository>();
-builder.Services.AddScoped<IPizzaSuggester, PizzaSuggester>();
+//builder.Services.AddScoped<IPizzaSuggester, PizzaSuggester>();
+builder.Services.AddScoped<PizzaFactory>();
 builder.Services.AddScoped<IPizzaService, PizzaService>();
 var app = builder.Build();
 

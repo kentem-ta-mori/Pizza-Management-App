@@ -1,4 +1,5 @@
 using ContosoPizza.DTOs;
+using ContosoPizza.Factories;
 using ContosoPizza.Interfaces;
 using ContosoPizza.Models;
 
@@ -9,18 +10,18 @@ namespace ContosoPizza.Services
         private readonly IToppingRepository _toppingRepository;
         private readonly IBasePizzaRepository _basePizzaRepository;
         private readonly IOrderedMenuRepository _orderedMenuRepository;
-        private readonly IPizzaSuggester _pizzaSuggester;
+        private readonly PizzaFactory _pizzaFactory;
 
         public PizzaService(
             IToppingRepository toppingRepository,
             IBasePizzaRepository basePizzaRepository,
             IOrderedMenuRepository orderedMenuRepository,
-            IPizzaSuggester pizzaSuggester)
+            PizzaFactory pizzaFactory)
         {
             _toppingRepository = toppingRepository;
             _basePizzaRepository = basePizzaRepository;
             _orderedMenuRepository = orderedMenuRepository;
-            _pizzaSuggester = pizzaSuggester;
+            _pizzaFactory = pizzaFactory;
         }
 
         // DTOをドメインモデルに変換する非同期メソッド
@@ -65,10 +66,9 @@ namespace ContosoPizza.Services
             switch (orderStatus)
             {
                 case OrderedMenueRequestDto.OrderStatus.firstTime:
-                    bool hasCheaperAlternative = await _pizzaSuggester.CheaperAlternativeAvailableAsync(orderedMenu.CustomedPiza);
-                    if (hasCheaperAlternative)
+                    Pizza? cheaperPizza = await _pizzaFactory.CreateCheaperAlternativeAsync(orderedMenu.CustomedPiza);
+                    if (cheaperPizza != null)
                     {
-                        Pizza? cheaperPizza = await _pizzaSuggester.GetCheaperAlternativeAsync(orderedMenu.CustomedPiza);
                         return new OrderProcessingResult
                         {
                             ProcessedOrder = orderedMenu,
@@ -89,7 +89,7 @@ namespace ContosoPizza.Services
                     }
 
                 case OrderedMenueRequestDto.OrderStatus.recommended:
-                    Pizza? recommendedPizza = await _pizzaSuggester.GetCheaperAlternativeAsync(orderedMenu.CustomedPiza);
+                    Pizza? recommendedPizza = await _pizzaFactory.CreateCheaperAlternativeAsync(orderedMenu.CustomedPiza);
                     if (recommendedPizza == null)
                     {
                         return new OrderProcessingResult { ErrorMessage = "推奨されるピザ構成が見つかりませんでした。" };
